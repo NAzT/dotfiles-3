@@ -1,19 +1,64 @@
-- name: Add repos
-  apt_repository:
-    repo: "{{ item }}"
-    state: present
-  with_items: "{{ apt_repos }}"
-- name: Add keys
-  apt_key:
-    url: "{{ item }}"
-    state: present
-  with_items: "{{ apt_keys }}"
-  become: true
-- name: Ensure apt is updated
-  apt:
-    state: latest
-    update_cache: yes
-    cache_valid_time: 3600
-  become: true
-- name: Set default shell to zsh
-  command: "chsh -s $(which zsh)"
+# - name: Add repos
+#   apt_repository:
+#     repo: "{{ item }}"
+#     state: present
+#   with_items: "{{ apt_repos }}"
+# - name: Add keys
+#   apt_key:
+#     url: "{{ item }}"
+#     state: present
+#   with_items: "{{ apt_keys }}"
+#   become: true
+# - name: Ensure apt is updated
+#   apt:
+#     state: latest
+#     update_cache: yes
+#     cache_valid_time: 3600
+#   become: true
+# - name: Set default shell to zsh
+#   command: "chsh -s $(which zsh)"
+
+# - name: Add repos
+#   apt_repository:
+#     repo: "{{ item }}"
+#     state: present
+#   with_items: "{{ apt_repos }}"
+# - name: Add keys
+#   apt_key:
+#     url: "{{ item }}"
+#     state: present
+#   with_items: "{{ apt_keys }}"
+#   become: true
+# - name: Ensure apt is updated
+#   apt:
+#     state: latest
+#     update_cache: yes
+#     cache_valid_time: 3600
+#   become: true
+# - name: Set default shell to zsh
+#   command: "chsh -s $(which zsh)"
+
+- name: install zsh packages
+  sudo: yes
+  apt: pkg={{ item }} state=installed
+  tags: [packages]
+  with_items:
+    - zsh
+    - zsh-doc
+    - curl
+
+- name: Clone oh-my-zsh repo
+  git: repo=git://github.com/robbyrussell/oh-my-zsh.git
+       dest=/home/nat_w/.oh-my-zsh
+
+- name: Create a new zsh config from the template in the repo
+  command: cp /home/nat_w/.oh-my-zsh/templates/zshrc.zsh-template /home/nat_w/.zshrc
+
+# Following command doesn't work, because it requires a password from the user...
+# - name: Set ZSH as default shell
+#   command: chsh nat_w -s /bin/zsh
+
+- name: Set zsh as default shell
+  user: name=nat_w shell=/usr/bin/zsh
+  sudo: yes
+
